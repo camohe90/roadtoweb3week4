@@ -5,11 +5,15 @@ import {NFTCard} from "./components/nftCard"
 import Button from '@mui/material/Button';
 
 
+
+
 const Home = () => {
   const [wallet, setWalletAddress] = useState("");
   const [collection, setCollectionAddress] = useState("");
   const [NFTs, setNFTs] = useState([])
   const [fetchForCollection, setFetchForCollection]=useState(false)
+  const [pagination, setPagination]=useState("")
+  let startToken = "";
 
   const fetchNFTs = async() => {
     let nfts; 
@@ -38,18 +42,22 @@ const Home = () => {
   }
 
 
-  const fetchNFTsForCollection = async () => {
+  const fetchNFTsForCollection = async (startToken = "") => {
     if (collection.length) {
       var requestOptions = {
         method: 'GET'
       };
       const api_key = "A8A1Oo_UTB9IN5oNHfAc2tAxdR4UVwfM"
       const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${api_key}/getNFTsForCollection/`;
-      const fetchURL = `${baseURL}?contractAddress=${collection}&withMetadata=${"true"}`;
+      const fetchURL = `${baseURL}?contractAddress=${collection}&startToken=${startToken}&withMetadata=${"true"}`;
       const nfts = await fetch(fetchURL, requestOptions).then(data => data.json())
       if (nfts) {
-        console.log("NFTs in collection:", nfts)
-        setNFTs(nfts.nfts)
+        console.log("NFTs in collection:", nfts);
+        setNFTs(nfts.nfts);
+        if(nfts.nextToken){
+          setPagination(nfts.nextToken)
+        }
+       
       }
     }
   }
@@ -57,7 +65,7 @@ const Home = () => {
   return (
     <div className="flex flex-col items-center justify-center py-8 gap-y-3">
       <div className="flex flex-col w-full justify-center items-center gap-y-2">
-        <input disabled={fetchForCollection}  className="w-2/5 bg-slate-100 py-2 px-2 rounded-lg text-gray-800 focus:outline-blue-300 disabled:bg-slate-50 disabled:text-gray-50" onChange={(e)=>{setWalletAddress(e.target.value)}} value={wallet} type={"text"} placeholder="Add your wallet address"></input>
+        <input disabled={fetchForCollection} className="w-2/5 bg-slate-100 py-2 px-2 rounded-lg text-gray-800 focus:outline-blue-300 disabled:bg-slate-50 disabled:text-gray-50" onChange={(e)=>{setWalletAddress(e.target.value)}} value={wallet} type={"text"} placeholder="Add your wallet address"></input>
         <input className="w-2/5 bg-slate-100 py-2 px-2 rounded-lg text-gray-800 focus:outline-blue-300 disabled:bg-slate-50 disabled:text-gray-50" onChange={(e)=>{setCollectionAddress(e.target.value)}} value={collection} type={"text"} placeholder="Add the collection address"></input>
         <label className="text-gray-600 "><input onChange={(e)=>{setFetchForCollection(e.target.checked)}} type={"checkbox"} className="mr-2"></input>Fetch for collection</label>
         <button className={"disabled:bg-slate-500 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm w-1/5"} onClick={
@@ -76,6 +84,23 @@ const Home = () => {
             )
           })
         }
+      </div>
+      <div className="">
+        {pagination > 100 ? <button className="disabled:bg-slate-500 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm" onClick={
+          () => {
+            const paginationBack= NFTs[0].id.tokenId-100;
+            console.log("Pagination back", paginationBack)
+            fetchNFTsForCollection(paginationBack);
+          }
+        }>Back</button> : null}
+        {pagination ? <button className="disabled:bg-slate-500 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm " onClick={
+          () => {
+            fetchNFTsForCollection(pagination)
+          }
+        }>Next</button> : null}
+
+
+       
       </div>
     </div>
   )

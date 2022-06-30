@@ -2,6 +2,7 @@ import IconButton from '@mui/material/IconButton';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import ContentCopy from "@mui/icons-material/ContentCopy";
 
+
 export const NFTCard = ({ nft }) => {
 
     return (
@@ -18,15 +19,15 @@ export const NFTCard = ({ nft }) => {
                     <IconButton color="primary" aria-label="upload picture" component="span" onClick={ 
                         ()=>{
                             const copyText = nft.contract.address.toString();
+
                             console.log(copyText)
                             navigator.clipboard.writeText(copyText);
                             
                         }
-                        
-                        
                         }>
                         <ContentCopy />
                     </IconButton>
+                    {/* <p className='hidden'>Copied</p> */}
                 </div>
             </div>
 
